@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+%% packages
+\usepackage{lipsum} %http://ctan.org/pkg/lipsum
+\usepackage{wallpaper}
+\usepackage{framed, color}
+\definecolor{shadecolor}{rgb}{1.0,0.75,0.0}
+
+%% the main document
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+% the header image
+\ULCornerWallPaper{1}{/Users/sungshine/Desktop/screen2.png} % ICRC banner image
+\LLCornerWallPaper{1}{/Users/sungshine/Desktop/screen3bottom.png} % ICRC footer image
+
+% the hospital, patient and sample information
+\begin{tabbing}
+  \= Patient \= : \= Kardashian, Kimberly \\
+  \> Clinic \> : \> Grady Memorial Hospital, Atlanta, GA \\
+  \> Gender \> : \> Female \\
+  \> DOB \> : \> 10/21/1980 \\
+\end{tabbing}
+
+% the resulting risk assessment
+\noindent
+\framebox[\linewidth]{HIGH RISK}
+
+% the gene mutation results table 
+\newcommand{\head}[1]{\textnormal{\textbf{#1}}}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+  \hline
+  \head{Gene} & \head{Mutation} & \head{Known Associations} \\
+  \hline
+   \verb| MSH2   | & \verb| c.8C>G   | & \verb Lynch-syndrome \\
+   \verb| BRCA1  | & \verb| c.9A>T   | & \verb Breast-cancer \\
+   \verb| BRCA2  | & \verb| c.10G>C  | & \verb Ovarian-cancer \\
+  \hline
+\end{tabular}
+\end{center}
+
+% the gene details box
+\noindent
+\framebox[\linewidth]{Gene Details: \textit{MSH2} c.8C$>$G : NM-000251.2}
+\textbf{Functional Significance: Deleterious} \\
+The heterozycous germline \textit{MSH2} c.8C$>$G is predicted to result in the premature truncation of the \textit{MSH2} protein due to abnormal protein production and/or function. \\ \\
+\textbf{Clinical Significance: High Cancer Risk} \\
+This mutation is associated with increased cancer risk and should be regarded as clincally significant. \\
+
+% the additional information box
+\noindent
+\framebox[\linewidth]{Additional Information}
+\textbf{Genes Analyzed:} \textit{APC, ATM, BARD1, BMPR1A, BRCA1, BRCA2, BRIP1, CDH1, CDK4, CDKN2A, CHEK2, EPCAM, MLH1, MSH2, MSH6, MUTYH, NBN, PALB2, PMS2, PTEN, RAD51C, SMAD4, STK11, TP53} \\ \\
+\textbf{Disclaimer:} The techincal specifications summary of ICRC Gene Expose describes the analysis, method, performance, nomenclature, and interpretive criteria of this test. The classification and interpreation of variants identified reflect the current state of scientific understanding at the time of this report. \\
+
+\TeX  
+
+\end{document}
