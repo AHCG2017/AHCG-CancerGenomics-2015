@@ -15,5 +15,5 @@ Output files:
 raw VCF
 Annotated VCF
 Annotated/Filtered VCF
-![alt tag](http://http://www.prism.gatech.edu/~yasvanth3/ahcg_banner.png)
+![test](http://www.prism.gatech.edu/~yasvanth3/ahcg_banner.png)
 
