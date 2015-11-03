@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+
+################################# This is MapSplice and Rsem automated pipeline gzipped files ##################################
+################################# USAGE: ./mapSemV <sample_file_name> > <log_file>
+################################# Add path to the fastq files in lines 29,31,36,38 #############################################
+use strict;
+use Cwd;
+use File::Path qw(make_path remove_tree);
+use File::Copy;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
+
+my $datestring = localtime();
+
+my $samplelist = $ARGV[0];
+#################### read sample names given in input file ######################################################################
+open FILE, $samplelist or die $!;
+my @samplenames = <FILE>;
+close FILE;
+my $noofsamples = @samplenames;
+
+my $inputfile1;
+my $inputfile2;
+my $file1;
+my $file2;
+#################### Loops through each of the samplenames ######################################################################
+for(my $i=0; $i<$noofsamples; $i++)
+{
+    chomp $samplenames[$i];
+#################### Input paired end file 1 ####################################################################################
+    if(-e $samplenames[$i])
+    {
+	$inputfile1 = $samplenames[$i];
+    }
+    else
+    {warn "Could not open file $samplenames[$i] $!";}
+#################### Input paired end file 2 #####################################################################################
+    if(-e $samplenames[$i])
+    {
+	$inputfile2 = $samplenames[$i];
+    }
+    else
+    {warn "Could not open file $samplenames[$i] $!";}
+
+#################### Create a directory for results of pipeline and move to that directory ########################################
+make_path($samplenames[$i]);
+chdir ($samplenames[$i]);
+    my $curdir = "/storage/AHCG/cancergenomics/2015Fall/rsem/".$samplenames[$i];
+    copy($inputfile1, $curdir);
+    copy($inputfile2, $curdir);
+    $file1 = $samplenames[$i].".fastq";
+    $file2 = $samplenames[$i].".fastq";
+#################### Format fastq 1 for Mapsplice #################################################################################
+print "\t\t\t\t\t$samplenames[$i]\n\n";
+print "Started formatting fastq 1 for Mapsplice at $datestring\n";
+`java -Xmx512M -jar ../../tools/ubu-1.2-jar-with-dependencies.jar fastq-format --phred33to64 --strip --suffix /1 --in $file1 --out ./prep_1.fastq > ./mapsplice_prep1.log`;
+$datestring = localtime();
+print "Finished formatting fastq 1 at $datestring\n";
+#################### Format fastq 2 for Mapsplice ##################################################################################
+print "Started formatting fastq 2 for Mapsplice at $datestring\n";
+`java -Xmx512M -jar ../../tools/ubu-1.2-jar-with-dependencies.jar fastq-format --phred33to64 --strip --suffix /2 --in $file2 --out ./prep_2.fastq > ./mapsplice_prep2.log`;
+$datestring = localtime();
+print "Finished formatting fastq 2 at $datestring\n";
+#################### MAPSPLICE ######################################################################################################
+print "Starting MAPSPLICE at $datestring\n";
+`python ../../tools/MapSplice-v2.1.8/mapsplice.py --fusion -p 20 --chromosome-dir ../../references/chromosomes/ -x ../../reference/built_bowtie_index --bam -1 prep_1.fastq -2 prep_2.fastq -o ./results 2> mapsplice.log`;
+$datestring = localtime();
+print "Finished MAPSPLICE at $datestring\n";
+#################### Change directory to results #####################################################################################
+chdir ('results');
+#################### ADD READ GROUPS #################################################################################################
+print "Started adding read groups at $datestring\n";
+`java -Xmx2G -jar ../../../tools/picard-tools-1.96/AddOrReplaceReadGroups.jar INPUT=alignments.bam OUTPUT=./rg_alignments.bam RGSM=SAMPLE_B27p_L5.LB7 RGID= SAMPLE_B27p_L5.LB7 RGLB=TruSeq RGPL=illumina RGPU=B27p_L5.LB7 VALIDATION_STRINGENCY=SILENT TMP_DIR=./add_rg_tag_tmp > ./add_rg_tag.log 2> ./add_rg_tag.log`;
+$datestring = localtime();
+print "Finished adding read groups at $datestring\n";
+#################### CONVERT BACK TO PHRED33 #########################################################################################
+print "Started converting back to PHRED33 at $datestring\n";
+`java -Xmx512M -jar ../../../tools/ubu-1.2-jar-with-dependencies.jar sam-convert --phred64to33 --in ./rg_alignments.bam --out ./phred33_alignments.bam > ./sam_convert.log 2> ./sam_convert.log`;
+$datestring = localtime();
+print "Finished conversion back to PHRED33 at $datestring\n";
+#################### SORT BY COORDINATE ###############################################################################################
+print "Started sorting by Genomic Coordinates at $datestring\n";
+`../../../tools/samtools-0.1.19/samtools sort phred33_alignments.bam sorted_genome_alignment`;
+$datestring = localtime();
+print "Finished sorting at $datestring\n";
+#################### FLAGSTAT ##########################################################################################################
+print "Started Flagstat at $datestring\n";
+`../../../tools/samtools-0.1.19/samtools flagstat sorted_genome_alignment.bam > sorted_genome_alignment.bam.flagstat`;
+$datestring = localtime();
+print "Finished Flagstat at $datestring\n";
+#################### INDEX ##############################################################################################################
+print "Started Indexing alignment bam file at $datestring\n";
+`../../../tools/samtools-0.1.19/samtools index sorted_genome_alignment.bam`;
+$datestring = localtime();
+print "Finished Indexing at $datestring\n";
+#################### SORT BY CHR AND THEN BY READ ID #####################################################################################
+print "Started Sorting by CHR and then Read ID at $datestring\n";
+`perl ../../../tools/sort_bam_by_reference_and_name.pl --input sorted_genome_alignment.bam --output ./sorted_by_chr_read.bam --temp-dir ./sort_by_chr_read.tmp --samtools ../../../tools/samtools-0.1.19/samtools > ./sorted_by_chr_read.log 2> ./sorted_by_chr_read.log`;
+$datestring = localtime();
+print "Finished Sorting at $datestring\n";
+#################### TRANSLATE TO TRANSCRIPTOME COORDINATES ###############################################################################
+print "Started Translating to Transcriptome Coordinates at $datestring\n";
+`java -Xms3G -jar ../../../tools/ubu-1.2-jar-with-dependencies.jar sam-xlate --bed ../../../references/unc_hg19.bed --in sorted_by_chr_read.bam --out ./transcriptome_alignments.bam --order ../../../references/hg19_M_rCRS_ref/hg19_M_rCRS_ref.transcripts.fa --xgtags --reverse > ./genome_to_transcriptome.log 2> ./genome_to_transcriptome.log`;
+$datestring = localtime();
+print "Finished Translating at $datestring\n";
+#################### FILTER indels, large inserts, zero mapping quality FROM TRANSCRIPTOME BAM ############################################
+print "Started Filtering  indels, large inserts, zero mapping quality FROM TRANSCRIPTOME BAM at $datestring\n";
+`java -Xmx512M -jar ../../../tools/ubu-1.2-jar-with-dependencies.jar sam-filter --in ./transcriptome_alignments.bam --out ./transcriptome_alignments_filtered.bam --strip-indels –max-insert 10000 --mapq 1 > ./sam_filter.log 2> ./sam_filter.log`;
+$datestring = localtime();
+print "Finished Filtering at $datestring\n";
+#################### RSEM ##################################################################################################################
+print "Started RSEM at $datestring\n";
+`rsem-calculate-expression --paired-end --bam --estimate-rspd -p 12 transcriptome_alignments_filtered.bam ../../../references/hg19_M_rCRS_ref/hg19_M_rCRS_ref rsem > ./rsem.log 2> rsem.log`;
+$datestring = localtime();
+print "Finished RSEM at $datestring\n";
+#################### STRIP TRAILING TABS from rsem.isoforms.results ########################################################################
+print "Started STRIP TRAILING TABS from rsem.isoforms.results at $datestring\n";
+`perl ../../../tools/strip_trailing_tabs.pl --input rsem.isoforms.results --temp ./orig.isoforms.results > ./trim_isoform_tabs.log 2> ./trim_isoform_tabs.log`;
+$datestring = localtime();
+print "Finished STRIP TRAILING TABS at $datestring\n";
+#################### PRUNE ISOFORMS from gene quant file ###################################################################################
+print "Started Pruning Isoforms at $datestring\n";
+`mv rsem.genes.results ./orig.genes.results`;
+`sed /^uc0/d orig.genes.results > rsem.genes.results`;
+$datestring = localtime();
+print "Finished Pruning Isoforms at $datestring\n";
+#################### NORMALIZE GENE QUANT ###################################################################################################
+print "Started Normalizing gene quantification at $datestring\n";
+`perl ../../../tools/quartile_norm.pl -c 2 -q 75 -t 1000 -o rsem.genes.normalized_results rsem.genes.results`;
+$datestring = localtime();
+print "Finished Normalizing gene quantification at $datestring\n";
+#################### Move back to base directory and remove temp files ########################################################################
+chdir('/storage/AHCG/cancergenomics/2015Fall/rsem');
+#################### END OF PIPELINE ###########################################################################################################
+}
