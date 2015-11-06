@@ -29,7 +29,7 @@ done
 
 mkdir "./"${s}"_Results"
 
-now=$(date +"%r")
+now=$(date +'%d/%m/%Y %T')
 
 echo "Performing Alignment $now" 
 
