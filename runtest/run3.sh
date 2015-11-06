@@ -33,7 +33,6 @@ now=$(date +'%d/%m/%Y %T')
 
 echo "Performing Alignment $now" 
 
-
 time /storage/code_repos/run_seq.py -f ${f} -r ${r} -l ${p} --lane 1 -t 10 -s ${s} -o "./"${s}"_Results/" -g hg38
 
 echo "Performing Variant Calling $now"
