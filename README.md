@@ -8,7 +8,7 @@ Setup Data:
 Copy the contents from /home/yasvanth3/data/runtest/ to the /runtest/ folder here.
 
 Usage Example:
-./run3.sh -f <paired-end_forward_fastq> -r <paired-end_reverse_fastq> -s <sample_name> -p <sequence_platform>
+./run3.sh -f "paired-end_forward_fastq" -r "paired-end_reverse_fastq" -s "sample_name" -p "sequence_platform"
 
 Run Pipeline Example: 
 ./run3.sh -f test_r1.fastq -r test_r2.fastq -s test1 -p illumina
