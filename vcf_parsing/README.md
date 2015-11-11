@@ -10,7 +10,7 @@ Program that analysis a patient vcf to:
                 >Gene name vs cosmic score, colored by mutation type
 
 usage:
-./vcf_analyze.py <vcf_file>
+./vcf_analyze.py [vcf_file]
 
 Dependent python packages:
 
